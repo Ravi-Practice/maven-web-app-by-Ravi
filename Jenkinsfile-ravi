@@ -1,0 +1,23 @@
+node {
+    def MavenHome=tool name:"Maven-3.8.6"
+   stage ('git clone'){
+    git credentialsId: '919b152b-9b55-46c5-91ad-41b62ee996f7',
+      url: 'https://github.com/Ravi-Practice/maven-web-app-by-Ravi.git'}
+
+   stage ('build'){ 
+       sh "${MavenHome}/bin/mvn clean package"}
+       
+   stage ('SonarQubeCodeCovarage') {
+       sh "${MavenHome}/bin/mvn sonar:sonar"
+   }
+   stage ('NexusRepositoryArtifacts'){
+       sh "${MavenHome}/bin/mvn clean deploy"
+   }
+   stage ('DeployToTomcat'){
+       sshagent(['Tomcat-Pemfile']) {
+    // some block
+    sh "scp -o StrictHostKeyChecking=no target/maven-web-application.war ec2-user@172.31.42.155:/opt/apache-tomcat-9.0.68/webapps"
+       }
+       
+     }
+} 
