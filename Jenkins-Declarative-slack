@@ -1,0 +1,91 @@
+//Declarative Pipeline
+pipeline{
+    
+    agent any
+    
+    tools {
+  maven 'Maven-3.8.6'
+}
+    //stages starting
+stages{
+    //get the code from git-hub
+    stage('Git-Clone'){
+       steps{ 
+           sendslacknotifications('STARTED')
+           git credentialsId: '919b152b-9b55-46c5-91ad-41b62ee996f7',
+      url: 'https://github.com/Ravi-Practice/maven-web-app-by-Ravi.git'
+       }
+    }//git closing
+    //build the code by Maven-3.806
+   stage('build'){
+       steps{sh "mvn clean package"}
+       
+   } //build closing
+   //Code covarage by sonarqube 
+   stage ('SonarQubeCodeAnalysis'){
+       steps {
+           sh 'mvn clean sonar:sonar'
+       }
+   }
+   //nexus repos
+   stage ('Artifactory-StoredinNexus'){
+       steps{
+           sh 'mvn clean deploy'
+       }
+   }//nexus closing
+   //deploy to Tomcat
+   stage ('deploytoTomcate'){
+       steps{
+          sshagent(['Tomcat-Pemfile']) {
+    // some block
+    sh "scp -o StrictHostKeyChecking=no target/maven-web-application.war ec2-user@172.31.42.155:/opt/apache-tomcat-9.0.68/webapps"
+       } 
+       }
+   }//tomcat closing
+   
+   }//stages closing
+    post {
+  aborted {
+    // One or more steps need to be included within each condition's block.
+	sendslacknotifications(currentBuild.result)
+  }
+  success {
+    // One or more steps need to be included within each condition's block.
+	sendslacknotifications(currentBuild.result)
+  }
+  failure {
+    // One or more steps need to be included within each condition's block.
+	sendslacknotifications(currentBuild.result)
+  }
+}
+   
+}//pipeline closing
+//slack notifications
+def sendslacknotifications(String buildStatus = 'STARTED') {
+  // build status of null means successful
+  buildStatus =  buildStatus ?: 'SUCCESS'
+
+  // Default values
+  def colorName = 'RED'
+  def colorCode = '#FF0000'
+  def subject = "${buildStatus}: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'"
+  def summary = "${subject} (${env.BUILD_URL})"
+
+  // Override default values based on build status
+  if (buildStatus == 'STARTED') {
+    colorName = 'YELLOW'
+    colorCode = '#FFFF00'
+  } else if (buildStatus == 'SUCCESS') {
+    colorName = 'GREEN'
+    colorCode = '#00FF00'
+  } else {
+    colorName = 'RED'
+    colorCode = '#FF0000'
+  }
+
+  // Send notifications
+  slackSend (color: colorCode, message: summary, channel: "#jenkins-notifications")
+
+   //slack notifications
+   
+}
