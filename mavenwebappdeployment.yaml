@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: mavenwebappdeployment
 spec:
-    selector:
+  selector:
     matchLabels:
       app: mavenwebapp
   template:
@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: mavenwebappcontainer
-          image: ravitechdevops/maven-web-app-k8sdeploy:TAG
+          image: ravitechdevops/maven-web-app-k8sdeploy:14
           ports:
             - containerPort: 8080
           resources:
