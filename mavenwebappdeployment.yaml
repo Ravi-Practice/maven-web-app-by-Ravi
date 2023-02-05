@@ -3,11 +3,7 @@ kind: Deployment
 metadata:
   name: mavenwebappdeployment
 spec:
-  revisionHistoryLimit: 10
-  replicas: 2
-  strategy:
-    type: Recreate
-  selector:
+    selector:
     matchLabels:
       app: mavenwebapp
   template:
@@ -18,7 +14,7 @@ spec:
     spec:
       containers:
         - name: mavenwebappcontainer
-          image: ravitechdevops/maven-web-app-k8sdeploy
+          image: ravitechdevops/maven-web-app-k8sdeploy:${BuildNumber}
           ports:
             - containerPort: 8080
           resources:
