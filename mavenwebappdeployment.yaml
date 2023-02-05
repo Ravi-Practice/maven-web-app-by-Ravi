@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: mavenwebappcontainer
-          image: ravitechdevops/maven-web-app-k8sdeploy:14
+          image: ravitechdevops/maven-web-app-k8sdeploy:VERSION
           ports:
             - containerPort: 8080
           resources:
